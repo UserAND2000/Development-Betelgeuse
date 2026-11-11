@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <title>Pagina de telescopios </title>
+   <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El cielo no es el límite</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #06132e 0%, #123f78 55%, #78b9e8 100%);
+    }
+
+    #estrellas {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .estrella {
+      position: absolute;
+      color: #fff3a6;
+      line-height: 1;
+      text-shadow: 0 0 8px rgba(255, 243, 166, 0.65);
+    }
+
+    main,
+    #betelgeuse {
+      position: relative;
+      isolation: isolate;
+    }
+
+    main {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(2rem, 7vw, 5rem);
+      text-align: center;
+      text-shadow: 0 0 8px #fff, 0 0 20px #b9eaff, 0 0 40px #68c5ff;
+    }
+
+    /* Satélite */
+    .satellite-link {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: 145px;
+      height: 70px;
+      text-decoration: none;
+      filter: drop-shadow(0 0 8px rgba(130, 214, 255, 0.7));
+      transition: transform 0.2s;
+    }
+
+    .satellite-link:hover {
+      transform: scale(1.08);
+    }
+
+    .panel {
+      width: 42px;
+      height: 48px;
+      border: 2px solid #b5d9ff;
+      background: repeating-linear-gradient(
+        90deg,
+        #173b76 0 10px,
+        #86b7ed 11px 12px
+      );
+    }
+
+    .satellite-image {
+      width: 52px;
+      height: 52px;
+      border: 3px solid #e7f2ff;
+      border-radius: 9px;
+      background-image: url("https://voyager.jpl.nasa.gov/image/images/neptune/9bg.jpg");
+      background-position: center;
+      background-size: cover;
+    }
+
+    /* Botón del robot */
+    .robot-open {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 5;
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      color: white;
+      background: rgba(8, 28, 64, 0.85);
+      box-shadow: 0 0 18px rgba(130, 214, 255, 0.55);
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .robot-open:hover {
+      transform: scale(1.08);
+      background: #17477c;
+    }
+
+    .robot-icon {
+      width: 38px;
+      height: 38px;
+    }
+
+    /* Icono de telescopio */
+    .telescopio-link {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      color: white;
+      background: rgba(8, 28, 64, 0.88);
+      box-shadow: 0 0 18px rgba(130, 214, 255, 0.55);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .telescopio-link:hover {
+      transform: scale(1.08);
+      background: #17477c;
+    }
+
+    .telescopio-link svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    /* Pestaña de asteroide para volver al inicio */
+    .inicio-asteroide {
+      position: fixed;
+      left: 24px;
+      bottom: 24px;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      width: 68px;
+      height: 58px;
+      color: white;
+      text-decoration: none;
+      background: #8b756a;
+      clip-path: polygon(
+        19% 5%, 43% 0, 58% 12%, 82% 8%, 100% 38%,
+        89% 70%, 71% 95%, 43% 87%, 18% 100%, 0 70%, 7% 35%
+      );
+      filter: drop-shadow(0 0 10px rgba(255, 190, 130, 0.55));
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .inicio-asteroide:hover {
+      transform: scale(1.1) rotate(-5deg);
+      background: #aa8876;
+    }
+
+    .inicio-asteroide svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    /* Fondo oscuro detrás de la ventana del robot */
+    .chat-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .chat-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Ventana emergente lateral */
+    .chat-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      width: min(420px, 88vw);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      background: linear-gradient(180deg, #0b1c3b, #102b55);
+      box-shadow: 8px 0 30px rgba(0, 0, 0, 0.35);
+      transform: translateX(-105%);
+      transition: transform 0.3s ease;
+    }
+
+    .chat-panel.open {
+      transform: translateX(0);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-header .robot-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .chat-close {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      background: rgba(255, 255, 255, 0.12);
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+
+    .chat-close:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .chat-content {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .chat-content p {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .chat-input {
+      align-self: flex-end;
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border: 1px solid rgba(185, 234, 255, 0.55);
+      border-radius: 14px;
+      outline: none;
+      color: white;
+      background: rgba(4, 14, 33, 0.8);
+      font: inherit;
+    }
+
+    .chat-input::placeholder {
+      color: #c5d7ed;
+      opacity: 1;
+    }
+
+    .chat-input:focus {
+      border-color: #b9eaff;
+      box-shadow: 0 0 12px rgba(104, 197, 255, 0.4);
+    }
+
+    /* Sección informativa de Betelgeuse */
+    #betelgeuse {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      overflow: hidden;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #190c20, #30132a);
+    }
+
+    #soles {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .sol {
+      position: absolute;
+      width: var(--tamano);
+      height: var(--tamano);
+      border-radius: 50%;
+      background: #ff8a32;
+      opacity: var(--opacidad);
+      box-shadow: 0 0 18px 5px rgba(255, 111, 36, 0.45);
+    }
+
+    .betelgeuse-descripcion,
+    .betelgeuse-final {
+      position: relative;
+      z-index: 1;
+      width: min(760px, 100%);
+      margin: 0;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 180, 105, 0.3);
+      border-radius: 18px;
+      background: rgba(20, 9, 28, 0.78);
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      line-height: 1.7;
+    }
+
+    .observatorios {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      width: min(900px, 100%);
+    }
+
+    .observatorios img {
+      width: 45%;
+      max-width: 400px;
+      height: 250px;
+      object-fit: cover;
+      border: 2px solid rgba(255, 211, 160, 0.75);
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(255, 132, 58, 0.35);
+    }
+
+    /* Sección de telescopios */
+    #telescopios {
+      min-height: 85vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 1.2fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 2rem;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, #102b55, #06132e);
+    }
+
+    #telescopios p {
+      margin: 0;
+      padding: 1.5rem;
+      border: 1px solid rgba(185, 234, 255, 0.35);
+      border-radius: 18px;
+      background: rgba(4, 14, 33, 0.75);
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+      line-height: 1.6;
+    }
+
+    #telescopios img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border: 2px solid rgba(185, 234, 255, 0.6);
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(104, 197, 255, 0.25);
+    }
+
+    @media (max-width: 700px) {
+      #telescopios {
+        grid-template-columns: 1fr;
+      }
+
+      #telescopios img {
+        max-width: 400px;
+        height: 220px;
+        justify-self: center;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .observatorios {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .observatorios img {
+        width: 100%;
+        height: 210px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="estrellas" aria-hidden="true"></div>
+
+  <!-- Botón para abrir el panel del robot -->
+  <button
+    class="robot-open"
+    id="abrir-chat"
+    type="button"
+    aria-label="Abrir ventana del robot"
+    aria-controls="chat-panel"
+    aria-expanded="false"
+  >
+    <svg class="robot-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 7v8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="32" cy="5" r="3" fill="#8ee7ff"/>
+      <rect x="12" y="17" width="40" height="34" rx="10" fill="#e9f7ff"/>
+      <rect x="17" y="23" width="30" height="18" rx="7" fill="#183d69"/>
+      <circle cx="25" cy="32" r="3" fill="#8ee7ff"/>
+      <circle cx="39" cy="32" r="3" fill="#8ee7ff"/>
+      <path d="M25 46h14" stroke="#183d69" stroke-width="3" stroke-linecap="round"/>
+      <path d="M7 28h5M52 28h5" stroke="#e9f7ff" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <!-- Satélite -->
+  <a class="satellite-link" href="#betelgeuse" aria-label="Ir a la sección informativa">
+    <span class="panel" aria-hidden="true"></span>
+    <span
+      class="satellite-image"
+      role="img"
+      aria-label="Neptuno fotografiado por Voyager 2"
+    ></span>
+    <span class="panel" aria-hidden="true"></span>
+  </a>
+
+  <!-- Asteroide para volver al inicio -->
+  <a class="inicio-asteroide" href="#inicio" aria-label="Volver al inicio">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path
+        d="M15 23 22 13l12 3 7-5 11 9 5 12-8 8-3 12-13 4-8-7-12 1-5-11 5-9z"
+        fill="#b99b86"
+        stroke="#f0d5bd"
+        stroke-width="3"
+        stroke-linejoin="round"
+      />
+      <circle cx="25" cy="27" r="3" fill="#80685b"/>
+      <circle cx="42" cy="35" r="4" fill="#80685b"/>
+      <circle cx="29" cy="45" r="2.5" fill="#80685b"/>
+    </svg>
+  </a>
+
+  <!-- Telescopio para ir a la sección de telescopios -->
+  <a
+    class="telescopio-link"
+    href="#telescopios"
+    aria-label="Ir a la sección de telescopios"
+  >
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path
+        d="M14 20 39 10l8 18-25 10z"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linejoin="round"
+      />
+      <path
+        d="m39 10 5-3 8 18-5 3M25 35l-4 11m12-16 6 17m-25 0h27"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </a>
+
+  <main id="inicio">
+    <h1>el cielo no es el limite</h1>
+  </main>
+
+  <!-- Fondo que aparece al abrir el panel -->
+  <div class="chat-overlay" id="chat-overlay"></div>
+
+  <!-- Ventana lateral del robot -->
+  <aside
+    class="chat-panel"
+    id="chat-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Ventana del robot"
+    aria-hidden="true"
+  >
+    <div class="chat-header">
+      <svg class="robot-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 7v8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="32" cy="5" r="3" fill="#8ee7ff"/>
+        <rect x="12" y="17" width="40" height="34" rx="10" fill="#e9f7ff"/>
+        <rect x="17" y="23" width="30" height="18" rx="7" fill="#183d69"/>
+        <circle cx="25" cy="32" r="3" fill="#8ee7ff"/>
+        <circle cx="39" cy="32" r="3" fill="#8ee7ff"/>
+        <path d="M25 46h14" stroke="#183d69" stroke-width="3" stroke-linecap="round"/>
+        <path d="M7 28h5M52 28h5" stroke="#e9f7ff" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+
+      <button
+        class="chat-close"
+        id="cerrar-chat"
+        type="button"
+        aria-label="Cerrar ventana"
+      >×</button>
+    </div>
+
+    <div class="chat-content">
+      <p>¿cual es su duda?</p>
+    </div>
+
+    <input
+      class="chat-input"
+      type="text"
+      placeholder="Escribe sus dudas"
+      aria-label="Escribe tus dudas"
+    >
+  </aside>
+
+  <section id="betelgeuse">
+    <div id="soles" aria-hidden="true"></div>
+
+    <p class="betelgeuse-descripcion">
+      Betelgeuse es pionera en el desarrollo, actualización y distribución
+      de software especializado en el análisis de datos y las simulaciones
+      dentro de la astronomía.
+    </p>
+
+    <div class="observatorios">
+      <img
+        src="https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=900&q=80"
+        alt="Observatorio astronómico bajo el cielo nocturno"
+      >
+      <img
+        src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=900&q=80"
+        alt="Vista del espacio y el cielo estrellado"
+      >
+    </div>
+
+    <p class="betelgeuse-final">
+      nuestros telescopios y software son utilizados por observatorios
+      de talla nacional
+    </p>
+  </section>
+
+  <!-- Sección de telescopios -->
+  <section id="telescopios" aria-label="Nuestros telescopios">
+    <img
+      src="https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=900&q=80"
+      alt="Telescopio astronómico"
+      loading="lazy"
+    >
+
+    <p>
+      Tenemos una gran variedad de telescopios, para todos los tamaños,
+      bolsillos y objetivos
+    </p>
+
+    <img
+      src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=900&q=80"
+      alt="Telescopio y cielo estrellado"
+      loading="lazy"
+    >
+  </section>
+
+  <script>
+    const estrellas = document.querySelector("#estrellas");
+
+    for (let i = 0; i < 65; i++) {
+      const estrella = document.createElement("span");
+      estrella.className = "estrella";
+      estrella.textContent = "★";
+      estrella.style.left = `${Math.random() * 100}%`;
+      estrella.style.top = `${Math.random() * 100}%`;
+      estrella.style.fontSize = `${Math.random() * 16 + 8}px`;
+      estrella.style.opacity = `${Math.random() * 0.6 + 0.4}`;
+      estrellas.appendChild(estrella);
+    }
+
+    const fondoSoles = document.querySelector("#soles");
+
+    for (let i = 0; i < 28; i++) {
+      const sol = document.createElement("span");
+      const tamano = Math.random() * 18 + 7;
+
+      sol.className = "sol";
+      sol.style.left = `${Math.random() * 100}%`;
+      sol.style.top = `${Math.random() * 100}%`;
+      sol.style.setProperty("--tamano", `${tamano}px`);
+      sol.style.setProperty("--opacidad", `${Math.random() * 0.5 + 0.35}`);
+      fondoSoles.appendChild(sol);
+    }
+
+    const botonAbrir = document.querySelector("#abrir-chat");
+    const botonCerrar = document.querySelector("#cerrar-chat");
+    const panelChat = document.querySelector("#chat-panel");
+    const fondoChat = document.querySelector("#chat-overlay");
+    const campoTexto = document.querySelector(".chat-input");
+
+    function abrirChat() {
+      panelChat.classList.add("open");
+      fondoChat.classList.add("open");
+      panelChat.setAttribute("aria-hidden", "false");
+      botonAbrir.setAttribute("aria-expanded", "true");
+      campoTexto.focus();
+    }
+
+    function cerrarChat() {
+      panelChat.classList.remove("open");
+      fondoChat.classList.remove("open");
+      panelChat.setAttribute("aria-hidden", "true");
+      botonAbrir.setAttribute("aria-expanded", "false");
+      botonAbrir.focus();
+    }
+
+    botonAbrir.addEventListener("click", abrirChat);
+    botonCerrar.addEventListener("click", cerrarChat);
+    fondoChat.addEventListener("click", cerrarChat);
+
+    document.addEventListener("keydown", (evento) => {
+      if (evento.key === "Escape" && panelChat.classList.contains("open")) {
+        cerrarChat();
+      }
+    });
+  </script>
+</body>
+</html>
